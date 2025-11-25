@@ -20,27 +20,90 @@ unset($_SESSION['register_error']);
     <title>Register | P3KU</title>
     <link rel="stylesheet" href="<?php echo URL_ROOT; ?>assets/css/style.css">
     <style>
+        /* --- LIGHT GREEN THEME --- */
         body {
             font-family: 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            display: flex; justify-content: center; align-items: center;
-            height: 100vh; margin: 0;
+            /* Light Green Gradient */
+            background: linear-gradient(135deg, #A5D6A7 0%, #66BB6A 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
         }
         .auth-card {
-            background: white; padding: 40px; border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2); width: 400px;
+            background: white;
+            padding: 40px;
+            border-radius: 15px; /* Softer corners */
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            width: 400px;
         }
-        h2 { text-align: center; color: #333; margin-bottom: 20px; }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; color: #666; }
-        .form-control { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        h2 {
+            text-align: center;
+            color: #388E3C; /* Dark Green Title */
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 500;
+        }
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #E8F5E9;
+            border-radius: 8px;
+            box-sizing: border-box;
+            background-color: #FAFAFA;
+            transition: border-color 0.3s;
+        }
+        .form-control:focus {
+            border-color: #66BB6A; /* Light Green Focus */
+            outline: none;
+            background-color: #fff;
+        }
         .btn-primary {
-            width: 100%; padding: 12px; background: #667eea; color: white;
-            border: none; border-radius: 5px; cursor: pointer; font-size: 1rem;
+            width: 100%;
+            padding: 12px;
+            /* Green Gradient Button */
+            background: linear-gradient(135deg, #81C784 0%, #4CAF50 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            box-shadow: 0 4px 6px rgba(76, 175, 80, 0.2);
+            transition: transform 0.1s, opacity 0.3s;
         }
-        .btn-primary:hover { background: #5a6fd6; }
-        .alert-error { color: red; background: #ffe6e6; padding: 10px; border-radius: 5px; margin-bottom: 15px; text-align: center; }
-        .link { display: block; text-align: center; margin-top: 15px; color: #667eea; text-decoration: none; }
+        .btn-primary:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+        .alert-error {
+            color: #C62828;
+            background: #FFEBEE;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            text-align: center;
+            border: 1px solid #C62828;
+        }
+        .link {
+            display: block;
+            text-align: center;
+            margin-top: 15px;
+            color: #4CAF50; /* Green Link */
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .link:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>

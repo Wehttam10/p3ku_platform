@@ -17,11 +17,9 @@ if (file_exists(ROOT_PATH . 'controllers/authController.php')) {
 }
 
 // --- 2. CAPTURE MESSAGES ---
-// Capture Error
 $error_message = $_SESSION['login_error'] ?? null;
 unset($_SESSION['login_error']);
 
-// ✅ NEW: Capture Success
 $success_message = $_SESSION['login_success'] ?? null;
 unset($_SESSION['login_success']);
 ?>
@@ -34,46 +32,145 @@ unset($_SESSION['login_success']);
     <title>P3KU Platform - Login</title>
     <link rel="stylesheet" href="<?php echo URL_ROOT; ?>assets/css/style.css">
     <style>
-        /* ... (Keep your existing CSS) ... */
-        h1 { color: #fff; }
+        /* --- LIGHT GREEN THEME STYLES --- */
         body {
             font-family: 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            display: flex; justify-content: center; align-items: center;
-            height: 100vh; margin: 0;
+            /* Light Green Gradient Background */
+            background: linear-gradient(135deg, #A5D6A7 0%, #66BB6A 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
         }
+
         .login-container {
-            background: #fff; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            max-width: 900px; width: 100%; display: flex; overflow: hidden;
+            background: #fff;
+            border-radius: 15px; /* Softer corners */
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            max-width: 900px;
+            width: 100%;
+            display: flex;
+            overflow: hidden;
         }
+
         .welcome-section {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: #fff; padding: 60px 40px; flex: 1; display: flex;
-            flex-direction: column; justify-content: center;
+            /* Matching Light Green Gradient Sidebar */
+            background: linear-gradient(135deg, #81C784 0%, #4CAF50 100%);
+            color: #fff;
+            padding: 60px 40px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
-        .login-section { padding: 60px 40px; flex: 1; }
-        .login-section h2 { margin-bottom: 30px; color: #333; }
-        .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; margin-bottom: 8px; color: #666; font-weight: 500;}
+        
+        .welcome-section h1 { text-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+
+        .login-section {
+            padding: 60px 40px;
+            flex: 1;
+        }
+
+        .login-section h2 {
+            margin-bottom: 30px;
+            color: #388E3C; /* Darker Green for readable title */
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+
         .form-group input {
-            width: 100%; padding: 12px; border: 2px solid #e0e0e0;
-            border-radius: 5px; font-size: 1em; box-sizing: border-box;
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #E8F5E9; /* Very light green border */
+            border-radius: 8px;
+            font-size: 1em;
+            box-sizing: border-box;
+            background-color: #FAFAFA;
+            transition: border-color 0.3s;
         }
+
+        .form-group input:focus {
+            border-color: #66BB6A; /* Light Green Focus */
+            background-color: #fff;
+            outline: none;
+        }
+
         .btn {
-            width: 100%; padding: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: #fff; border: none; border-radius: 5px; font-size: 1.1em; cursor: pointer;
+            width: 100%;
+            padding: 14px;
+            /* Light Green Gradient Button */
+            background: linear-gradient(135deg, #81C784 0%, #4CAF50 100%);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.1s, opacity 0.3s;
+            box-shadow: 0 4px 6px rgba(76, 175, 80, 0.2);
         }
-        .child-login-link { text-align: center; margin-top: 20px; }
+
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .child-login-link {
+            text-align: center;
+            margin-top: 25px;
+        }
+
         .child-login-link a {
-            color: #667eea; text-decoration: none; font-weight: bold; font-size: 1.1rem;
-            padding: 10px; border: 2px solid #667eea; border-radius: 8px; display: inline-block;
+            color: #4CAF50; /* Standard Material Green */
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.1rem;
+            padding: 12px 20px;
+            border: 2px solid #4CAF50;
+            border-radius: 10px;
+            display: inline-block;
+            transition: all 0.3s;
+        }
+
+        .child-login-link a:hover {
+            background-color: #4CAF50;
+            color: white;
+            text-decoration: none;
         }
         
         /* Message Styles */
-        .alert-error { background:#fee; color:#c33; padding:12px; border-radius:5px; margin-bottom:20px; }
-        .alert-success { background:#d4edda; color:#155724; padding:12px; border-radius:5px; margin-bottom:20px; border: 1px solid #c3e6cb; }
+        .alert-error {
+            background: #FFEBEE;
+            color: #C62828;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 5px solid #C62828;
+        }
         
-        @media (max-width: 768px) { .login-container { flex-direction: column; } }
+        .alert-success {
+            background: #E8F5E9;
+            color: #2E7D32;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 5px solid #2E7D32;
+        }
+
+        @media (max-width: 768px) {
+            .login-container { flex-direction: column; }
+            .welcome-section, .login-section { padding: 40px 30px; }
+        }
     </style>
 </head>
 <body>
@@ -120,7 +217,8 @@ unset($_SESSION['login_success']);
         </div>
         
         <div style="text-align: center; margin-top: 15px;">
-            Don't have an account? <a href="register.php" style="color: #667eea; text-decoration: none;">Sign up here</a>
+            <span style="color:#888;">Don't have an account?</span> 
+            <a href="register.php" style="color: #4CAF50; text-decoration: none; font-weight:bold;">Sign up here</a>
         </div>
     </div>
 </div>
