@@ -1,0 +1,8 @@
+# Enable Rewrite Engine
+RewriteEngine On
+RewriteBase /p3ku-main/
+
+# Redirect all requests to index.php if the file/folder doesn't exist
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php?url=$1 [QSA,L]
