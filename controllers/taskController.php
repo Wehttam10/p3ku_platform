@@ -20,12 +20,9 @@ require_once(ROOT_PATH . 'config/auth.php');
 class TaskController {
 
     /**
-     * @param array 
-     * @param array
+     * 1. Create Task
      */
     public static function handleCreateTask($post_data, $file_data) { 
-        
-        // --- 1. Security Check ---
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             header('Location: ' . BASE_URL . 'admin/createTask.php'); 
             exit();
@@ -35,7 +32,6 @@ class TaskController {
         $steps = $post_data['steps'] ?? []; 
         $files = $file_data['step_image_files'] ?? []; 
         
-        // --- 2. Data Acquisition ---
         $name = trim($post_data['task_name'] ?? '');
         $description = trim($post_data['task_description'] ?? '');
         $required_skill = trim($post_data['required_skill'] ?? '');
@@ -46,20 +42,17 @@ class TaskController {
             exit();
         }
         
-        // --- 3. Process Steps & Images ---
         $cleaned_steps = [];
         $step_number = 1;
+        $upload_error = "";
         
         foreach ($steps as $key => $step) {
             if (!empty(trim($step['instruction_text'] ?? ''))) {
-                
-                $image_path = $step['image_path'] ?? ''; 
-                
+                $image_path = '';
                 $file_index = $key - 1; 
 
                 if (isset($files['tmp_name'][$file_index]) && $files['error'][$file_index] === UPLOAD_ERR_OK) {
-                    
-                    $single_file_data = [
+                    $single_file = [
                         'name' => $files['name'][$file_index], 
                         'type' => $files['type'][$file_index],
                         'tmp_name' => $files['tmp_name'][$file_index], 
@@ -67,12 +60,12 @@ class TaskController {
                         'size' => $files['size'][$file_index],
                     ];
                     
-                    $uploaded_path = handleStepImageUpload($single_file_data); 
+                    $uploaded_path = self::handleStepImageUpload($single_file, $upload_error); 
 
                     if ($uploaded_path) {
                         $image_path = $uploaded_path;
                     } else {
-                        $_SESSION['error_message'] = "Image upload failed for step {$step_number}.";
+                        $_SESSION['error_message'] = "Image upload failed for step {$step_number}: " . $upload_error;
                         header('Location: ' . BASE_URL . 'admin/createTask.php'); 
                         exit();
                     }
@@ -92,58 +85,43 @@ class TaskController {
              exit();
         }
 
-
-        // --- 4. Save to Database ---
         $task_model = new Task();
         $conn = $task_model->__get('conn'); 
 
         try {
             $conn->beginTransaction(); 
-            
             $task_id = $task_model->createTask($admin_id, $name, $description, $required_skill);
             
-            if (!$task_id) {
-                throw new Exception("Failed to create main task record.");
+            if ($task_id) {
+                $task_model->createTaskSteps($task_id, $cleaned_steps);
+                $conn->commit();
+                $_SESSION['success_message'] = "Task created successfully!";
+                header('Location: ' . BASE_URL . 'admin/tasks.php'); 
+                exit();
+            } else {
+                throw new Exception("Failed to create task record.");
             }
-
-            $steps_success = $task_model->createTaskSteps($task_id, $cleaned_steps);
-
-            if (!$steps_success) {
-                throw new Exception("Failed to save task steps.");
-            }
-
-            $conn->commit();
-
-            $_SESSION['success_message'] = "Task created successfully!";
-            
-            header('Location: ' . BASE_URL . 'admin/createTask.php'); 
-            exit();
-
         } catch (Exception $e) {
-            if ($conn->inTransaction()) {
-                $conn->rollBack();
-            }
-            error_log("Task creation failed: " . $e->getMessage());
+            if ($conn->inTransaction()) $conn->rollBack();
             $_SESSION['error_message'] = "System Error: " . $e->getMessage();
             header('Location: ' . BASE_URL . 'admin/createTask.php'); 
             exit();
         }
     }
 
+    /**
+     * 2. Assign Task
+     */
     public static function handleAssignment($post_data) {
-        
-        // 1. Security
         if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
             header('Location: ' . BASE_URL . 'index.php');
             exit();
         }
 
-        // 2. Get Data
         $admin_id = $_SESSION['user_id'];
         $task_id = filter_var($post_data['task_id'] ?? null, FILTER_VALIDATE_INT);
         $participant_ids = $post_data['participant_ids'] ?? [];
 
-        // 3. Validation
         if (!$task_id) {
             $_SESSION['error_message'] = "System Error: Task ID missing.";
             header('Location: ' . BASE_URL . 'admin/tasks.php'); 
@@ -152,20 +130,15 @@ class TaskController {
 
         if (empty($participant_ids)) {
             $_SESSION['error_message'] = "Please select at least one participant.";
-            // Redirect back to the assignment page (ensure file is named assignTask.php)
             header('Location: ' . BASE_URL . 'admin/assignTask.php?task_id=' . $task_id); 
             exit();
         }
         
-        // 4. Model Interaction
         $task_model = new Task();
         $result = $task_model->createAssignments($task_id, $admin_id, $participant_ids);
 
-        // 5. Handle Success/Failure
         if ($result['success']) {
-            $count = $result['assigned_count'];
-            $_SESSION['success_message'] = "Success! Assigned to $count participant(s).";
-
+            $_SESSION['success_message'] = "Success! Assigned to " . $result['assigned_count'] . " participant(s).";
             header('Location: ' . BASE_URL . 'admin/tasks.php'); 
         } else {
             $_SESSION['error_message'] = "Database Error: Could not assign task.";
@@ -174,100 +147,12 @@ class TaskController {
         exit();
     }
 
-    public static function checkAndSetProgress($assignment_id, $current_status) {
-        if ($current_status === 'Pending') {
-            $task_model = new Task();
-            return $task_model->updateAssignmentStatus($assignment_id, 'In Progress');
-        }
-        return true;
-    }
-
-    public static function handleSubmitEvaluation($post_data) {
-        
-        // 1. Security Check: Ensure user is a participant
-        if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'participant') {
-             header('Location: ' . BASE_URL . 'participant/pinLogin.php'); 
-             exit();
-        }
-
-        // 2. Get Data
-        $assignment_id = filter_var($post_data['assignment_id'] ?? null, FILTER_VALIDATE_INT);
-        $emoji_key = trim($post_data['emoji_sentiment'] ?? '');
-        $participant_id = $_SESSION['user_id'] ?? null;
-
-        // 3. Validation
-        if (!$assignment_id || empty($emoji_key) || !$participant_id) {
-             header('Location: ' . BASE_URL . 'participant/index.php'); 
-             exit();
-        }
-        
-        // 4. Model Interaction
-        $task_model = new Task();
-        $success = $task_model->submitSelfEvaluation($assignment_id, $participant_id, $emoji_key);
-
-        // 5. Redirect
-        if ($success) {
-            header('Location: ' . BASE_URL . 'participant/index.php'); 
-        } else {
-             header('Location: ' . BASE_URL . 'participant/doTask.php?assignment_id=' . $assignment_id); 
-        }
-        exit();
-    }
-
-    function handleStepImageUpload($file_array) {
-    // --- 1. Validation Checks ---
-    if ($file_array['error'] !== UPLOAD_ERR_OK) {
-        error_log("File upload failed with error code: " . $file_array['error']);
-        return false;
-    }
-
-    $allowed_types = ['image/jpeg', 'image/png', 'image/webp'];
-    $max_size = 5 * 1024 * 1024;
-
-    if (!class_exists('finfo')) {
-        $file_type = $file_array['type'];
-    } else {
-        $finfo = new finfo(FILEINFO_MIME_TYPE);
-        $file_type = $finfo->file($file_array['tmp_name']);
-    }
-
-    if (!in_array($file_type, $allowed_types)) {
-        error_log("File type not allowed: " . $file_type);
-        return false;
-    }
-
-    if ($file_array['size'] > $max_size) {
-        error_log("File size exceeds limit: " . $file_array['size']);
-        return false;
-    }
-
-    // --- 2. Create Unique and Safe Filename ---
-    $extension = '.jpg';
-    if (function_exists('exif_imagetype')) {
-        $extension = image_type_to_extension(exif_imagetype($file_array['tmp_name']));
-    }
-    
-    $safe_filename = uniqid('task_') . time() . $extension;
-
-    $target_dir_relative = 'uploads/tasks/';
-
-    if (!is_dir(ROOT_PATH . $target_dir_relative)) {
-         mkdir(ROOT_PATH . $target_dir_relative, 0755, true);
-    }
-    
-    $target_path = ROOT_PATH . $target_dir_relative . $safe_filename; 
-
-    // --- 3. Move File ---
-    if (move_uploaded_file($file_array['tmp_name'], $target_path)) {
-        return '/' . $target_dir_relative . $safe_filename;
-    }
-
-    return false;
-    }
-
+    /**
+     * 3. Update Task
+     */
     public static function handleUpdateTask($post_data, $file_data) {
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !is_admin()) {
-            check_access(ROLE_ADMIN, ROOT_PATH);
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+            header('Location: ' . BASE_URL . 'index.php');
             exit();
         }
 
@@ -278,7 +163,7 @@ class TaskController {
         $steps = $post_data['steps'] ?? [];
         $files = $file_data['step_image_files'] ?? [];
 
-        if (!$task_id || empty($name) || empty($required_skill)) {
+        if (!$task_id || empty($name)) {
             $_SESSION['error_message'] = "Missing required fields.";
             header('Location: ' . BASE_URL . 'admin/editTask.php?id=' . $task_id);
             exit();
@@ -286,22 +171,23 @@ class TaskController {
 
         $cleaned_steps = [];
         $step_number = 1;
+        $upload_error = "";
 
         foreach ($steps as $key => $step) {
             if (!empty(trim($step['instruction_text'] ?? ''))) {
-
                 $image_path = $step['existing_image_path'] ?? ''; 
-
-                $file_index = $key - 1;
+                $file_index = $step_number - 1; 
 
                 if (isset($files['tmp_name'][$file_index]) && $files['error'][$file_index] === UPLOAD_ERR_OK) {
-                    $single_file_data = [
-                        'name' => $files['name'][$file_index], 'type' => $files['type'][$file_index],
-                        'tmp_name' => $files['tmp_name'][$file_index], 'error' => $files['error'][$file_index],
+                    $single_file = [
+                        'name' => $files['name'][$file_index], 
+                        'type' => $files['type'][$file_index],
+                        'tmp_name' => $files['tmp_name'][$file_index], 
+                        'error' => $files['error'][$file_index],
                         'size' => $files['size'][$file_index],
                     ];
                     
-                    $uploaded_path = handleStepImageUpload($single_file_data); 
+                    $uploaded_path = self::handleStepImageUpload($single_file, $upload_error); 
                     if ($uploaded_path) {
                         $image_path = $uploaded_path;
                     }
@@ -320,33 +206,57 @@ class TaskController {
 
         try {
             $conn->beginTransaction();
-
-            // 1. Update Main Info
             $task_model->updateTask($task_id, $name, $description, $required_skill);
-
-            // 2. Delete OLD steps (The Clean Slate Strategy)
             $task_model->deleteAllSteps($task_id);
-
-            // 3. Insert NEW/UPDATED steps
-            if (!empty($cleaned_steps)) {
-                $task_model->createTaskSteps($task_id, $cleaned_steps);
-            }
-
+            $task_model->createTaskSteps($task_id, $cleaned_steps);
             $conn->commit();
+
             $_SESSION['success_message'] = "Task updated successfully!";
             header('Location: ' . BASE_URL . 'admin/tasks.php');
 
         } catch (Exception $e) {
             $conn->rollBack();
-            error_log("Update Error: " . $e->getMessage());
-            $_SESSION['error_message'] = "Failed to update task.";
+            $_SESSION['error_message'] = "Update failed: " . $e->getMessage();
             header('Location: ' . BASE_URL . 'admin/editTask.php?id=' . $task_id);
         }
         exit();
     }
 
+    /**
+     * 4. Submit Feedback
+     */
+    public static function handleSubmitEvaluation($post_data) {
+        if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'participant') {
+             header('Location: ' . BASE_URL . 'participant/pinLogin.php'); 
+             exit();
+        }
+
+        $assignment_id = filter_var($post_data['assignment_id'] ?? null, FILTER_VALIDATE_INT);
+        $emoji_key = trim($post_data['emoji_sentiment'] ?? '');
+        $participant_id = $_SESSION['user_id'] ?? null;
+
+        if (!$assignment_id || empty($emoji_key)) {
+             header('Location: ' . BASE_URL . 'participant/index.php'); 
+             exit();
+        }
+        
+        $task_model = new Task();
+        $success = $task_model->submitSelfEvaluation($assignment_id, $participant_id, $emoji_key);
+
+        if ($success) {
+            header('Location: ' . BASE_URL . 'participant/index.php'); 
+        } else {
+             // Generic error message if DB fails
+             $_SESSION['error_message'] = "Error saving evaluation.";
+             header('Location: ' . BASE_URL . 'participant/doTask.php?assignment_id=' . $assignment_id); 
+        }
+        exit();
+    }
+
+    /**
+     * 5. Delete Task (From Library)
+     */
     public static function handleDeleteTask($get_data) {
-        // 1. Security Check
         if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
             header('Location: ' . BASE_URL . 'index.php');
             exit();
@@ -368,4 +278,81 @@ class TaskController {
         header('Location: ' . BASE_URL . 'admin/tasks.php');
         exit();
     }
+
+    /**
+     * 6. Delete Assignment (From Active List)
+     */
+    public static function handleDeleteAssignment($get_data) {
+        if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+            header('Location: ' . BASE_URL . 'index.php');
+            exit();
+        }
+
+        $assignment_id = filter_var($get_data['id'] ?? null, FILTER_VALIDATE_INT);
+
+        if ($assignment_id) {
+            $task_model = new Task();
+            if ($task_model->deleteAssignment($assignment_id)) {
+                $_SESSION['success_message'] = "Assignment removed successfully.";
+            } else {
+                $_SESSION['error_message'] = "Failed to remove assignment.";
+            }
+        } else {
+            $_SESSION['error_message'] = "Invalid Assignment ID.";
+        }
+
+        // ✅ FIXED: Redirect to manageTask.php (not manage_assignments.php)
+        header('Location: ' . BASE_URL . 'admin/manageTask.php');
+        exit();
+    }
+
+    /**
+     * ✅ HELPER: Image Upload Logic
+     */
+    private static function handleStepImageUpload($file_array, &$error_msg = "") {
+        if ($file_array['error'] !== UPLOAD_ERR_OK) {
+            $error_msg = "PHP Upload Error Code: " . $file_array['error'];
+            return false;
+        }
+
+        $allowed_types = ['image/jpeg', 'image/png', 'image/webp'];
+        $max_size = 5 * 1024 * 1024; 
+
+        if ($file_array['size'] > $max_size) {
+            $error_msg = "File is too big (Max 5MB).";
+            return false;
+        }
+
+        if (!class_exists('finfo')) {
+            $file_type = $file_array['type'];
+        } else {
+            $finfo = new finfo(FILEINFO_MIME_TYPE);
+            $file_type = $finfo->file($file_array['tmp_name']);
+        }
+
+        if (!in_array($file_type, $allowed_types)) {
+            $error_msg = "Invalid file type: " . $file_type;
+            return false;
+        }
+
+        $target_dir = ROOT_PATH . 'uploads/tasks/';
+        if (!is_dir($target_dir)) {
+             if (!mkdir($target_dir, 0777, true)) {
+                 $error_msg = "Failed to create folder.";
+                 return false;
+             }
+        }
+        
+        $extension = pathinfo($file_array['name'], PATHINFO_EXTENSION);
+        $safe_filename = uniqid('task_') . time() . '.' . $extension;
+        $target_path = $target_dir . $safe_filename; 
+
+        if (move_uploaded_file($file_array['tmp_name'], $target_path)) {
+            return '/uploads/tasks/' . $safe_filename;
+        } else {
+            $error_msg = "Failed to move uploaded file.";
+            return false;
+        }
+    }
 }
+?>

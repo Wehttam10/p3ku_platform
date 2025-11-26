@@ -68,7 +68,14 @@ $skill_levels = [
     <title>Admin | Reports</title>
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/style.css"> 
     <style>
-        a { text-decoration: none; color: #333; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        
+        .btn-manage {
+            background-color: #607D8B; color: white; padding: 12px 20px;
+            text-decoration: none; border-radius: 8px; font-weight: bold;
+            display: inline-flex; align-items: center;
+        }
+        .btn-manage:hover { background-color: #546E7A; }
 
         .filter-bar { 
             background: white; padding: 20px; border-radius: 12px; 
@@ -111,7 +118,12 @@ $skill_levels = [
     </header>
 
     <main>
-        <h2>📈 Detailed Reports</h2>
+        <div class="page-header">
+            <h2 style="margin:0;">📈 Detailed Reports</h2>
+            <a href="manageTask.php" class="btn-manage">
+                ⚙️ Manage Active Assignments
+            </a>
+        </div>
 
         <div class="summary-section">
             <div class="summary-box" style="border-left-color: #F4C542;">

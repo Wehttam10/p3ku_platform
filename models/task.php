@@ -203,23 +203,58 @@ class Task {
     public function submitSelfEvaluation($assignment_id, $participant_id, $emoji_sentiment) {
         try {
             $this->conn->beginTransaction();
-            
-            $sqlEval = "INSERT INTO " . $this->evaluation_table . " (assignment_id, participant_id, emoji_sentiment, evaluated_at) VALUES (:aid, :pid, :sent, NOW())";
-            $stmt = $this->conn->prepare($sqlEval);
-            $stmt->bindValue(':aid', $assignment_id);
-            $stmt->bindValue(':pid', $participant_id);
-            $stmt->bindValue(':sent', $emoji_sentiment);
-            $stmt->execute();
 
-            $sqlUpdate = "UPDATE " . $this->assignment_table . " SET status = 'Completed' WHERE assignment_id = :aid";
-            $stmt = $this->conn->prepare($sqlUpdate);
-            $stmt->bindValue(':aid', $assignment_id);
-            $stmt->execute();
+            // 1. Get the Task ID for this assignment
+            $queryInfo = "SELECT task_id FROM " . $this->assignment_table . " WHERE assignment_id = :aid";
+            $stmtInfo = $this->conn->prepare($queryInfo);
+            $stmtInfo->bindValue(':aid', $assignment_id);
+            $stmtInfo->execute();
+            $task_id = $stmtInfo->fetchColumn();
+
+            // 2. "Archive" any OLD completed assignments for this task
+            // This frees up the 'Completed' slot in the unique index
+            // We change old ones from 'Completed' to 'Canceled' (or you could use a new status like 'Archived')
+            $queryArchive = "UPDATE " . $this->assignment_table . " 
+                             SET status = 'Canceled' 
+                             WHERE task_id = :tid 
+                             AND participant_id = :pid 
+                             AND status = 'Completed' 
+                             AND assignment_id != :aid"; // Don't touch the current one yet
+            
+            $stmtArchive = $this->conn->prepare($queryArchive);
+            $stmtArchive->bindValue(':tid', $task_id);
+            $stmtArchive->bindValue(':pid', $participant_id);
+            $stmtArchive->bindValue(':aid', $assignment_id);
+            $stmtArchive->execute();
+
+            // 3. Insert the new Evaluation
+            $sqlEval = "INSERT INTO " . $this->evaluation_table . " 
+                        (assignment_id, participant_id, emoji_sentiment, evaluated_at) 
+                        VALUES (:aid, :pid, :sent, NOW())";
+            $stmtEval = $this->conn->prepare($sqlEval);
+            $stmtEval->bindValue(':aid', $assignment_id);
+            $stmtEval->bindValue(':pid', $participant_id);
+            $stmtEval->bindValue(':sent', $emoji_sentiment);
+            $stmtEval->execute();
+
+            // 4. Update the Current Assignment to Completed
+            $sqlUpdate = "UPDATE " . $this->assignment_table . " 
+                          SET status = 'Completed' 
+                          WHERE assignment_id = :aid";
+            $stmtUpdate = $this->conn->prepare($sqlUpdate);
+            $stmtUpdate->bindValue(':aid', $assignment_id);
+            $stmtUpdate->execute();
 
             $this->conn->commit();
             return true;
+
         } catch (PDOException $e) {
-            if ($this->conn->inTransaction()) $this->conn->rollBack();
+            if ($this->conn->inTransaction()) {
+                $this->conn->rollBack();
+            }
+            // Debugging: Print error to screen if it still fails
+            // die("Final Error: " . $e->getMessage());
+            error_log("Evaluation failed: " . $e->getMessage());
             return false;
         }
     }
@@ -266,6 +301,37 @@ class Task {
         $stmt = $this->conn->prepare($sql);
         $stmt->execute($params); 
         return $stmt->fetchAll(PDO::FETCH_ASSOC); 
+    }
+
+    public function getAllActiveAssignments() {
+        $query = "SELECT a.assignment_id, a.status, a.assigned_at, 
+                         p.name AS participant_name, t.name AS task_name
+                  FROM assignments a
+                  JOIN participants p ON a.participant_id = p.participant_id
+                  JOIN tasks t ON a.task_id = t.task_id
+                  ORDER BY a.assigned_at DESC";
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * ✅ NEW: Delete a specific assignment.
+     */
+    public function deleteAssignment($assignment_id) {
+        try {
+            // We delete from 'assignments'. 
+            // Due to ON DELETE CASCADE in SQL, this will also auto-remove 
+            // any linked evaluations if they exist.
+            $query = "DELETE FROM assignments WHERE assignment_id = :id";
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindValue(':id', $assignment_id);
+            return $stmt->execute();
+        } catch (PDOException $e) {
+            error_log("Delete Assignment Failed: " . $e->getMessage());
+            return false;
+        }
     }
 }
 ?>
