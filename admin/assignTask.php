@@ -18,7 +18,6 @@ require_once(ROOT_PATH . 'models/task.php');
 require_once(ROOT_PATH . 'controllers/taskController.php'); 
 
 // --- 2. HANDLE FORM SUBMISSION ---
-// We check if the form was posted
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'assign') {
     TaskController::handleAssignment($_POST);
 }
@@ -26,13 +25,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'assig
 // --- 3. GET DATA ---
 $task_id = filter_input(INPUT_GET, 'task_id', FILTER_VALIDATE_INT);
 
-// If no ID in URL (and not a POST request), go back
 if (!$task_id && $_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: ' . BASE_URL . 'admin/tasks.php');
     exit;
 }
 
-// If we are in a POST request, we might need to recover task_id from POST data
 if (!$task_id) {
     $task_id = $_POST['task_id'] ?? null;
 }

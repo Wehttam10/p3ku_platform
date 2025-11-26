@@ -8,12 +8,10 @@ error_reporting(E_ALL);
 define('ROOT_PATH', dirname(__DIR__) . '/');
 define('BASE_URL', '/p3ku-main/'); 
 
-// Ensure cookie params match index.php
 session_set_cookie_params(0, '/');
 
 if (session_status() === PHP_SESSION_NONE) session_start();
 
-// Security Check
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'participant') {
     header("Location: pinLogin.php");
     exit();
@@ -21,7 +19,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'participant') {
 
 require_once(ROOT_PATH . 'models/task.php');
 
-// Get Data
 $assignment_id = filter_input(INPUT_GET, 'assignment_id', FILTER_VALIDATE_INT);
 
 if (!$assignment_id) {
@@ -36,7 +33,6 @@ if (!$task_data) {
     die("Task not found or access denied.");
 }
 
-// Mark as In Progress
 if ($task_data['status'] === 'Pending') {
     $model->markInProgress($assignment_id);
 }

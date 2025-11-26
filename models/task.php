@@ -13,7 +13,6 @@ require_once(ROOT_PATH . 'config/db.php');
 class Task {
     private $conn;
     
-    // Table Names
     private $task_table = "tasks";
     private $steps_table = "task_steps";
     private $assignment_table = "assignments";
@@ -24,17 +23,12 @@ class Task {
         $this->conn = get_db_connection();
     }
     
-    // Magic getter for Controller Transactions
     public function __get($property) {
         if ($property === 'conn') {
             return $this->conn;
         }
         return null;
     }
-
-    /** -------------------------
-     * ADMIN TASK MANAGEMENT
-     * ------------------------- */
 
     public function createTask($admin_id, $name, $description, $required_skill) {
         $query = "INSERT INTO " . $this->task_table . " 
@@ -131,10 +125,6 @@ class Task {
         return $task;
     }
 
-    /** -------------------------
-     * ASSIGNMENT LOGIC
-     * ------------------------- */
-
     public function getAllParticipants() {
         $stmt = $this->conn->query("SELECT participant_id, name, skill_level FROM " . $this->participant_table . " ORDER BY name ASC");
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -145,8 +135,7 @@ class Task {
 
         $pids = array_filter($participant_ids, 'is_numeric');
         if (empty($pids)) return ['success' => false, 'assigned_count' => 0, 'skipped_count' => 0];
-        
-        // Check existing
+
         $placeholders = implode(',', array_fill(0, count($pids), '?'));
         $sql = "SELECT participant_id FROM " . $this->assignment_table . " WHERE task_id = ? AND participant_id IN ($placeholders) AND status IN ('Pending', 'In Progress')";
         $stmt = $this->conn->prepare($sql);
@@ -158,7 +147,6 @@ class Task {
 
         if (empty($to_insert)) return ['success' => true, 'assigned_count' => 0, 'skipped_count' => $skipped];
         
-        // Insert
         $sqlInsert = "INSERT INTO " . $this->assignment_table . " (task_id, participant_id, admin_id, status, assigned_at) VALUES (:tid, :pid, :aid, 'Pending', NOW())";
         $stmtInsert = $this->conn->prepare($sqlInsert);
         $count = 0;
@@ -172,10 +160,6 @@ class Task {
 
         return ['success' => true, 'assigned_count' => $count, 'skipped_count' => $skipped];
     }
-
-    /** -------------------------
-     * PARTICIPANT & PROGRESS
-     * ------------------------- */
 
     public function getParticipantTasks($participant_id) {
         $sql = "SELECT a.assignment_id, a.status, t.task_id, t.name, t.description, t.required_skill, t.created_at
@@ -240,10 +224,6 @@ class Task {
         }
     }
 
-    /** -------------------------
-     * REPORTS (The Missing Functions)
-     * ------------------------- */
-
     public function getCompletedTasks() {
         $sql = "SELECT a.assignment_id, p.name AS participant_name, t.name AS task_name, e.emoji_sentiment, e.evaluated_at AS completed_at
                 FROM assignments a
@@ -257,9 +237,6 @@ class Task {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    /**
-     * ✅ THIS WAS THE MISSING FUNCTION causing your error
-     */
     public function getAllAssignmentDetails($filters = []) {
         $where = " WHERE 1=1 ";
         $params = [];

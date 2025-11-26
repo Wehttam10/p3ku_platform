@@ -4,7 +4,6 @@
  * Handles all business logic and request processing for Task creation and management.
  */
 
-// --- FIX 1: Use ROOT_PATH for absolute paths ---
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
@@ -17,27 +16,22 @@ if (session_status() === PHP_SESSION_NONE) {
 
 require_once(ROOT_PATH . 'models/task.php');
 require_once(ROOT_PATH . 'config/auth.php');
-// NOTE: handleStepImageUpload() is a helper function defined below.
 
 class TaskController {
 
     /**
-     * Handles the creation of a new task, including its multiple steps.
-     * @param array $post_data The $_POST array.
-     * @param array $file_data The $_FILES array.
+     * @param array 
+     * @param array
      */
-    // MODIFIED: Added $file_data parameter to receive $_FILES
     public static function handleCreateTask($post_data, $file_data) { 
         
         // --- 1. Security Check ---
-        // Ideally check admin role here too
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            // FIX: Use BASE_URL for redirect
             header('Location: ' . BASE_URL . 'admin/createTask.php'); 
             exit();
         }
 
-        $admin_id = $_SESSION['user_id'] ?? 1; // Fallback to 1 for testing if session missing
+        $admin_id = $_SESSION['user_id'] ?? 1;
         $steps = $post_data['steps'] ?? []; 
         $files = $file_data['step_image_files'] ?? []; 
         
@@ -48,7 +42,6 @@ class TaskController {
 
         if (empty($name) || empty($required_skill)) {
             $_SESSION['error_message'] = "Task name and required skill level are mandatory.";
-            // FIX: Use BASE_URL
             header('Location: ' . BASE_URL . 'admin/createTask.php'); 
             exit();
         }
@@ -62,8 +55,6 @@ class TaskController {
                 
                 $image_path = $step['image_path'] ?? ''; 
                 
-                // Handle Image Upload
-                // Matches $_FILES index (0,1,2) to Step index (1,2,3)
                 $file_index = $key - 1; 
 
                 if (isset($files['tmp_name'][$file_index]) && $files['error'][$file_index] === UPLOAD_ERR_OK) {
@@ -125,8 +116,6 @@ class TaskController {
 
             $_SESSION['success_message'] = "Task created successfully!";
             
-            // FIX: Redirect to a valid URL. I assume you want to go back to the form or a list.
-            // If you don't have 'admin/tasks.php', redirect back to 'createTask.php'
             header('Location: ' . BASE_URL . 'admin/createTask.php'); 
             exit();
 
@@ -140,10 +129,7 @@ class TaskController {
             exit();
         }
     }
-    
-    /**
-     * Handles the assignment of a task to multiple selected participants.
-     */
+
     public static function handleAssignment($post_data) {
         
         // 1. Security
@@ -179,8 +165,7 @@ class TaskController {
         if ($result['success']) {
             $count = $result['assigned_count'];
             $_SESSION['success_message'] = "Success! Assigned to $count participant(s).";
-            
-            // Redirect to Task List
+
             header('Location: ' . BASE_URL . 'admin/tasks.php'); 
         } else {
             $_SESSION['error_message'] = "Database Error: Could not assign task.";
@@ -189,9 +174,6 @@ class TaskController {
         exit();
     }
 
-    /**
-     * Ensures the assignment status is set to 'In Progress' when the task is started.
-     */
     public static function checkAndSetProgress($assignment_id, $current_status) {
         if ($current_status === 'Pending') {
             $task_model = new Task();
@@ -200,9 +182,6 @@ class TaskController {
         return true;
     }
 
-    /**
-     * Processes the participant's final self-evaluation form submission.
-     */
     public static function handleSubmitEvaluation($post_data) {
         
         // 1. Security Check: Ensure user is a participant
@@ -218,30 +197,23 @@ class TaskController {
 
         // 3. Validation
         if (!$assignment_id || empty($emoji_key) || !$participant_id) {
-            // Redirect back to feedback page with error if data missing (though hidden inputs usually prevent this)
              header('Location: ' . BASE_URL . 'participant/index.php'); 
              exit();
         }
         
         // 4. Model Interaction
         $task_model = new Task();
-        // Ensure submitSelfEvaluation exists in models/task.php
         $success = $task_model->submitSelfEvaluation($assignment_id, $participant_id, $emoji_key);
 
         // 5. Redirect
         if ($success) {
-            // Success! Go back to task list
             header('Location: ' . BASE_URL . 'participant/index.php'); 
         } else {
-            // Error (Database issue)
              header('Location: ' . BASE_URL . 'participant/doTask.php?assignment_id=' . $assignment_id); 
         }
         exit();
     }
 
-    /**
-     * Helper function defined outside the class to handle file upload security and movement.
-    */
     function handleStepImageUpload($file_array) {
     // --- 1. Validation Checks ---
     if ($file_array['error'] !== UPLOAD_ERR_OK) {
@@ -250,11 +222,9 @@ class TaskController {
     }
 
     $allowed_types = ['image/jpeg', 'image/png', 'image/webp'];
-    $max_size = 5 * 1024 * 1024; // 5MB limit
+    $max_size = 5 * 1024 * 1024;
 
-    // Use finfo to reliably determine the MIME type
     if (!class_exists('finfo')) {
-        // Fallback for systems without fileinfo extension
         $file_type = $file_array['type'];
     } else {
         $finfo = new finfo(FILEINFO_MIME_TYPE);
@@ -272,17 +242,15 @@ class TaskController {
     }
 
     // --- 2. Create Unique and Safe Filename ---
-    $extension = '.jpg'; // Default extension
+    $extension = '.jpg';
     if (function_exists('exif_imagetype')) {
         $extension = image_type_to_extension(exif_imagetype($file_array['tmp_name']));
     }
     
     $safe_filename = uniqid('task_') . time() . $extension;
-    
-    // We store the path relative to the application root for easy access
+
     $target_dir_relative = 'uploads/tasks/';
-    
-    // Ensure the directory exists
+
     if (!is_dir(ROOT_PATH . $target_dir_relative)) {
          mkdir(ROOT_PATH . $target_dir_relative, 0755, true);
     }
@@ -291,7 +259,6 @@ class TaskController {
 
     // --- 3. Move File ---
     if (move_uploaded_file($file_array['tmp_name'], $target_path)) {
-        // Return the clean, web-accessible path
         return '/' . $target_dir_relative . $safe_filename;
     }
 
@@ -317,26 +284,15 @@ class TaskController {
             exit();
         }
 
-        // --- Prepare Steps Data ---
         $cleaned_steps = [];
         $step_number = 1;
 
         foreach ($steps as $key => $step) {
             if (!empty(trim($step['instruction_text'] ?? ''))) {
-                
-                // 1. Start with the existing image path (from hidden input)
+
                 $image_path = $step['existing_image_path'] ?? ''; 
-                
-                // 2. Check if a NEW file was uploaded to replace it
-                // Note: The $key in the loop matches the file array index if the DOM didn't change too much,
-                // but relying on the order is standard for simple PHP arrays.
-                // Since we re-index in JS, the post 'key' might allow us to find the file index.
-                // PHP $_FILES structure is tricky. We'll use the loop index ($step_number - 1) logic 
-                // assuming the browser sends them in order, OR we rely on the controller logic we used before.
-                
-                // We will assume the file input is associative or ordered. 
-                // To be safe, let's map based on the loop index.
-                $file_index = $key - 1; // Adjust based on your array start
+
+                $file_index = $key - 1;
 
                 if (isset($files['tmp_name'][$file_index]) && $files['error'][$file_index] === UPLOAD_ERR_OK) {
                     $single_file_data = [
@@ -347,7 +303,7 @@ class TaskController {
                     
                     $uploaded_path = handleStepImageUpload($single_file_data); 
                     if ($uploaded_path) {
-                        $image_path = $uploaded_path; // Overwrite with new image
+                        $image_path = $uploaded_path;
                     }
                 }
 
@@ -359,7 +315,6 @@ class TaskController {
             }
         }
 
-        // --- Database Transaction ---
         $task_model = new Task();
         $conn = $task_model->__get('conn');
 
@@ -409,8 +364,7 @@ class TaskController {
         } else {
             $_SESSION['error_message'] = "Invalid Task ID.";
         }
-
-        // Redirect back to task list
+        
         header('Location: ' . BASE_URL . 'admin/tasks.php');
         exit();
     }

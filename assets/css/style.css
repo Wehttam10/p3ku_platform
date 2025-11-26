@@ -1,8 +1,3 @@
-/*
- * Main Stylesheet for P3ku Platform
- * This file is the primary entry point for all front-end styling.
- */
-
 /* --- 1. Import Design Tokens (Variables) --- */
 @import url('tokens.css');
 
@@ -17,10 +12,10 @@ body {
 }
 
 main { 
-    max-width: 1200px; /* Max width constraint */
+    max-width: 1200px;
     margin: 0 auto;
     padding: var(--spacing-lg) var(--spacing-md);
-    flex-grow: 1; /* Allows main content to fill space */
+    flex-grow: 1;
 }
 
 header {

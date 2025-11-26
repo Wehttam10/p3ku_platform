@@ -23,9 +23,7 @@ if (!file_exists(ROOT_PATH . 'models/task.php')) {
 require_once(ROOT_PATH . 'models/task.php');
 
 // --- 3. HANDLE DELETION LOGIC ---
-// Check if a delete request was made (e.g., tasks.php?delete_id=5)
 if (isset($_GET['delete_id'])) {
-    // Security Check
     if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
         die("Access Denied");
     }
@@ -39,7 +37,6 @@ if (isset($_GET['delete_id'])) {
         $_SESSION['error_message'] = "Failed to delete task.";
     }
     
-    // Redirect to clear the URL parameters
     header("Location: tasks.php");
     exit();
 }
@@ -53,7 +50,6 @@ try {
     die("Database Error: " . $e->getMessage());
 }
 
-// Get and clear session messages
 $success_message = $_SESSION['success_message'] ?? null;
 $error_message = $_SESSION['error_message'] ?? null;
 unset($_SESSION['success_message'], $_SESSION['error_message']);
@@ -67,7 +63,6 @@ unset($_SESSION['success_message'], $_SESSION['error_message']);
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/style.css"> 
     <style>
         a { text-decoration: none; color: #333; }
-        /* Minimal styling */
         .header-actions { margin-bottom: 20px; text-align: right; }
         .btn-create { 
             background-color: #F4C542; color: #333; padding: 12px 20px; 
@@ -83,7 +78,7 @@ unset($_SESSION['success_message'], $_SESSION['error_message']);
         }
         .btn-assign { background-color: #007bff; }
         .btn-edit { background-color: #28a745; }
-        .btn-delete { background-color: #dc3545; } /* Red for Delete */
+        .btn-delete { background-color: #dc3545; }
         
         .skill-cell { font-style: italic; font-size: 0.95rem; }
     </style>

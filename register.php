@@ -20,10 +20,8 @@ unset($_SESSION['register_error']);
     <title>Register | P3KU</title>
     <link rel="stylesheet" href="<?php echo URL_ROOT; ?>assets/css/style.css">
     <style>
-        /* --- LIGHT GREEN THEME --- */
         body {
             font-family: 'Segoe UI', sans-serif;
-            /* Light Green Gradient */
             background: linear-gradient(135deg, #A5D6A7 0%, #66BB6A 100%);
             display: flex;
             justify-content: center;
@@ -34,13 +32,13 @@ unset($_SESSION['register_error']);
         .auth-card {
             background: white;
             padding: 40px;
-            border-radius: 15px; /* Softer corners */
+            border-radius: 15px;
             box-shadow: 0 15px 35px rgba(0,0,0,0.1);
             width: 400px;
         }
         h2 {
             text-align: center;
-            color: #388E3C; /* Dark Green Title */
+            color: #388E3C;
             margin-bottom: 20px;
         }
         .form-group {
@@ -62,14 +60,13 @@ unset($_SESSION['register_error']);
             transition: border-color 0.3s;
         }
         .form-control:focus {
-            border-color: #66BB6A; /* Light Green Focus */
+            border-color: #66BB6A;
             outline: none;
             background-color: #fff;
         }
         .btn-primary {
             width: 100%;
             padding: 12px;
-            /* Green Gradient Button */
             background: linear-gradient(135deg, #81C784 0%, #4CAF50 100%);
             color: white;
             border: none;
@@ -97,7 +94,7 @@ unset($_SESSION['register_error']);
             display: block;
             text-align: center;
             margin-top: 15px;
-            color: #4CAF50; /* Green Link */
+            color: #4CAF50;
             text-decoration: none;
             font-weight: bold;
         }

@@ -8,20 +8,17 @@ error_reporting(E_ALL);
 define('ROOT_PATH', dirname(__DIR__) . '/');
 define('BASE_URL', '/p3ku-main/'); 
 
-// Ensure consistent cookie settings
 session_set_cookie_params(0, '/');
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Security Check
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'participant') {
     header("Location: pinLogin.php");
     exit();
 }
 
-// Data Retrieval
 if (!file_exists(ROOT_PATH . 'models/task.php')) {
     die("Error: Could not find models/task.php");
 }

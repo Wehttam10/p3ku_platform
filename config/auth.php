@@ -3,7 +3,6 @@
  * Authentication and Authorization Utility Functions
  */
 
-// Define role constants
 define('ROLE_ADMIN', 'admin');
 define('ROLE_PARENT', 'parent');
 define('ROLE_PARTICIPANT', 'participant');
@@ -24,11 +23,7 @@ function get_user_role() {
     return ROLE_GUEST;
 }
 
-/**
- * Enforces role-based access control.
- */
 function check_access($required_roles, $redirect_path = URL_ROOT) {
-    // NOTE: Uses URL_ROOT for redirects
     if ($redirect_path === '/p3ku-main/' || $redirect_path === '/p3ku-main/home') {
         $redirect_path = URL_ROOT;
     }
@@ -57,22 +52,14 @@ function is_participant() {
     return get_user_role() === ROLE_PARTICIPANT;
 }
 
-/**
- * Generates and retrieves the CSRF token.
- */
 function get_csrf_token() {
-    // Session is assumed to be started by errorHandler.php
     if (empty($_SESSION['csrf_token'])) {
         $_SESSION['csrf_token'] = bin2hex(random_bytes(32)); 
     }
     return $_SESSION['csrf_token'];
 }
 
-/**
- * Validates the token submitted via POST request against the session token.
- */
 function validate_csrf_token($submitted_token) {
-    // We rely on the global session being available.
     return !empty($submitted_token) && 
            !empty($_SESSION['csrf_token']) && 
            hash_equals($_SESSION['csrf_token'], $submitted_token);

@@ -29,8 +29,6 @@ $skill_filter = $_GET['skill'] ?? 'all';
 
 // --- 4. GET DATA ---
 $task_model = new Task();
-// Use the function getAllAssignmentDetails we wrote in models/task.php
-// If it's missing, I provided it in the "Final Model" code block earlier.
 $all_assignments = $task_model->getAllAssignmentDetails([
     'status' => $status_filter,
     'required_skill' => $skill_filter
@@ -46,7 +44,6 @@ foreach ($all_assignments as $a) {
     if (!empty($a['emoji_sentiment']) && $a['emoji_sentiment'] === 'happy') $happy_count++;
 }
 
-// Helper for Emojis
 function getEmoji($sentiment) {
     switch ($sentiment) {
         case 'happy': return '😊';
@@ -56,7 +53,6 @@ function getEmoji($sentiment) {
     }
 }
 
-// Skill Level Definitions for Dropdown
 $skill_levels = [
     'Level 1: Basic Visual (Red)' => 'Level 1: Basic Visual',
     'Level 2: Simple Steps (Yellow)' => 'Level 2: Simple Steps',

@@ -37,7 +37,6 @@ if (!$task) {
     exit();
 }
 
-// Extract existing steps
 $existing_steps = $task['steps'] ?? [];
 
 $skill_levels = [
@@ -110,7 +109,6 @@ unset($_SESSION['error_message']);
             <div id="stepsContainer">
                 
                 <?php 
-                // --- LOOP THROUGH EXISTING STEPS --- 
                 $counter = 0;
                 foreach ($existing_steps as $step): 
                     $counter++;
@@ -160,7 +158,6 @@ unset($_SESSION['error_message']);
         const stepsContainer = document.getElementById('stepsContainer');
         const addStepButton = document.getElementById('addStepButton');
         
-        // Initialize counter based on PHP output
         let stepCounter = <?php echo count($existing_steps); ?>;
 
         function updateStepNumbers() {
@@ -170,9 +167,7 @@ unset($_SESSION['error_message']);
             steps.forEach((stepDiv) => {
                 stepDiv.setAttribute('data-step', currentStepIndex);
                 stepDiv.querySelector('h4').textContent = `Step ${currentStepIndex}`;
-                
-                // Update names for PHP array mapping
-                // steps[1][instruction_text]
+
                 stepDiv.querySelectorAll('input, textarea').forEach(input => {
                     if (input.name.includes('steps[')) {
                         const newName = input.name.replace(/steps\[\d+\]/, `steps[${currentStepIndex}]`);
@@ -181,7 +176,7 @@ unset($_SESSION['error_message']);
                 });
                 currentStepIndex++;
             });
-            stepCounter = currentStepIndex - 1; // Update global counter
+            stepCounter = currentStepIndex - 1;
         }
 
         window.removeStep = function(btn) {

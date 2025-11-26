@@ -28,11 +28,9 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'parent') {
 $parent_name = $_SESSION['user_name'] ?? 'Parent'; 
 $parent_id = $_SESSION['user_id'];
 
-// Fetch children
 $participant_model = new Participant();
 $children = $participant_model->getChildrenByParentId($parent_id);
 
-// --- HTML START ---
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -68,8 +66,7 @@ $children = $participant_model->getChildrenByParentId($parent_id);
             font-family: monospace; font-size: 1.1rem; color: #006064; 
             border: 1px solid #B2EBF2;
         }
-        
-        /* Button Styles */
+
         .btn-action {
             padding: 8px 15px; text-decoration: none; border-radius: 6px; 
             font-size: 0.9rem; display:inline-block; margin-top: 10px; 

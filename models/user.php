@@ -4,26 +4,20 @@
  * Handles general user authentication for Admin and Parent roles.
  */
 
-// --- FIX 1: Use ROOT_PATH for absolute pathing ---
-// This is critical to prevent Fatal Errors in the Front Controller model.
 require_once(ROOT_PATH . 'config/db.php');
 
 class User {
     private $conn;
-    private $table_name = "users"; // Assumed table name for standard users
+    private $table_name = "users";
 
-    /**
-     * Constructor: Initializes the database connection.
-     */
     public function __construct() {
         $this->conn = get_db_connection();
     }
 
     /**
-     * Finds a user by email and verifies the password hash.
-     * @param string $email The user's login email.
-     * @param string $password The unhashed password submitted.
-     * @return array|false The user record (ID, name, role) if verified, otherwise false.
+     * @param string
+     * @param string
+     * @return array|false
      */
     public function verifyUserLogin($email, $password) {
         $query = "SELECT 
@@ -48,7 +42,6 @@ class User {
             }
             
         } catch (PDOException $e) {
-            // Logs database errors that occurred during the login attempt
             error_log("User login verification failed: " . $e->getMessage());
         }
 
@@ -56,9 +49,8 @@ class User {
     }
     
     /**
-     * Fetches all users with a specific role.
-     * @param string $role The role to filter by (e.g., 'parent').
-     * @return array Array of user records.
+     * @param string
+     * @return array
      */
     public function getAllUsersByRole($role) {
         $query = "SELECT user_id, name, email FROM " . $this->table_name . " WHERE role = :role";
@@ -76,9 +68,6 @@ class User {
         return $stmt->rowCount() > 0;
     }
 
-    /**
-     * Registers a new user (Parent).
-     */
     public function registerUser($name, $email, $password, $role = 'parent') {
         // 1. Check if email exists
         if ($this->emailExists($email)) {

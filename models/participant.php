@@ -14,7 +14,6 @@ class Participant {
     private $conn;
     private $table_name = "participants";
     
-    // Optional: For future security features
     private $attempts_table = "login_attempts";
     private $max_attempts = 5;
     private $time_window_minutes = 5;
@@ -23,9 +22,6 @@ class Participant {
         $this->conn = get_db_connection(); 
     }
 
-    /**
-     * Magic getter for accessing $conn
-     */
     public function __get($property) {
         if ($property === 'conn' && property_exists($this, $property)) {
             return $this->$property;
@@ -33,10 +29,6 @@ class Participant {
         return null;
     }
 
-    /**
-     * ✅ CRITICAL: The Login Function
-     * This checks the PIN against the database.
-     */
     public function loginByPin($pin) {
         // SQL: Find a participant with this PIN who is marked as Active (1)
         $query = "SELECT participant_id, name, skill_level 
@@ -45,22 +37,16 @@ class Participant {
                   LIMIT 1";
         
         $stmt = $this->conn->prepare($query);
-        
-        // Sanitize
+
         $pin = htmlspecialchars(strip_tags($pin));
         
         $stmt->bindParam(':pin', $pin);
         $stmt->execute();
         
-        // Returns the user array if found, or FALSE if not
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    /**
-     * Fetches all participants (For Admin List)
-     */
     public function getAllParticipants() {
-        // We join with the 'users' table to get the Parent's name
         $query = "SELECT p.participant_id, p.name, p.skill_level, p.is_active, 
                          u.name AS parent_name
                   FROM " . $this->table_name . " p
@@ -78,9 +64,6 @@ class Participant {
         }
     }
 
-    /**
-     * Fetches active participants (For Assign Task Dropdown)
-     */
     public function getActiveParticipants() {
         $query = "SELECT participant_id, name, skill_level
                   FROM " . $this->table_name . " 
@@ -98,9 +81,6 @@ class Participant {
         }
     }
 
-    /**
-     * Fetches a participant by ID (For Profile View)
-     */
     public function getParticipantById($participant_id) {
         $query = "SELECT * FROM " . $this->table_name . " WHERE participant_id = :id LIMIT 1";
 
@@ -109,15 +89,8 @@ class Participant {
         $stmt->execute();
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
-    
-    /**
-     * Registers a new participant (Used in future Parent Dashboard)
-     */
+
     public function createParticipant($parent_id, $name, $pin, $sensory_details) {
-        
-        // --- 1. CHECK GLOBALLY FOR DUPLICATE PIN ---
-        // We removed "AND parent_user_id = :pid"
-        // Now it checks if ANYONE in the database has this PIN.
         $check_query = "SELECT participant_id FROM " . $this->table_name . " 
                         WHERE pin = :pin";
         
@@ -126,11 +99,10 @@ class Participant {
         $stmt_check->execute();
 
         if ($stmt_check->rowCount() > 0) {
-            // Return a clear error message to the parent
+
             return "This PIN is already in use by another user in the system. Please choose a different 4-digit code.";
         }
 
-        // --- 2. PROCEED WITH CREATION (The rest stays the same) ---
         $query = "INSERT INTO " . $this->table_name . " 
                   SET parent_user_id = :parent_id, 
                       name = :name, 
@@ -160,9 +132,6 @@ class Participant {
         }
     }
 
-    /**
-     * Updates skill level and status (Used by Admin)
-     */
     public function updateSkillLevel($participant_id, $skill_level, $is_active) {
         $query = "UPDATE " . $this->table_name . " 
                   SET skill_level = :skill_level, 

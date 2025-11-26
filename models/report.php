@@ -12,19 +12,15 @@ if (!defined('ROOT_PATH')) {
 // --- 2. INCLUDES ---
 require_once(ROOT_PATH . 'config/db.php');
 
-// FIX: Changed 'Participant.php' to 'participant.php' (Lowercase)
-// This prevents "Failed to open stream" errors on case-sensitive systems.
 if (file_exists(ROOT_PATH . 'models/participant.php')) {
     require_once(ROOT_PATH . 'models/participant.php');
 } else {
-    // Fallback if the user capitalized the filename
     require_once(ROOT_PATH . 'models/participant.php');
 }
 
 class Report {
     private $conn;
     
-    // Table Names
     private $p_table = "participants";
     private $a_table = "assignments";
     private $t_table = "tasks";
@@ -34,9 +30,6 @@ class Report {
         $this->conn = get_db_connection();
     }
 
-    /**
-     * Generates a high-level summary dashboard for the Admin.
-     */
     public function getAdminSummary() {
         $summary = [];
 
@@ -72,9 +65,6 @@ class Report {
         return $summary;
     }
 
-    /**
-     * Fetches detailed data for a specific child's progress report.
-     */
     public function getParentReportData($participant_id) {
         $report = ['summary' => [], 'history' => []];
 
@@ -119,26 +109,21 @@ class Report {
         return $report;
     }
 
-    /**
-     * Fetches consolidated data for the Parent Dashboard.
-     */
     public function getConsolidatedParentData($parent_id) {
         $data = ['children' => []];
         
         // Ensure Participant class is loaded
         if (!class_exists('Participant')) {
-            return $data; // Prevent crash if class missing
+            return $data;
         }
 
         $p_model = new Participant(); 
-        // Call the function we added to models/participant.php earlier
         $children = $p_model->getChildrenByParentId($parent_id);
         
         if ($children) {
             foreach ($children as $child) {
                 $child_id = $child['participant_id'];
                 
-                // Get summary for this specific child
                 $report_data = $this->getParentReportData($child_id);
                 
                 $data['children'][] = [
@@ -146,7 +131,7 @@ class Report {
                     'name' => $child['name'],
                     'skill_level' => $child['skill_level'],
                     'is_active' => $child['is_active'],
-                    'pin' => $child['pin'], // Needed for dashboard display
+                    'pin' => $child['pin'],
                     'summary' => $report_data['summary']
                 ];
             }

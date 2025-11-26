@@ -10,7 +10,6 @@ error_reporting(E_ALL);
 define('ROOT_PATH', dirname(__DIR__) . '/');
 define('BASE_URL', '/p3ku-main/'); 
 
-// Ensure cookies are accessible across the whole domain
 session_set_cookie_params(0, '/');
 
 if (session_status() === PHP_SESSION_NONE) {
@@ -32,13 +31,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $user = $model->loginByPin($pin);
 
             if ($user) {
-                // --- LOGIN SUCCESS ---
                 $_SESSION['user_id'] = $user['participant_id'];
                 $_SESSION['user_name'] = $user['name'];
                 $_SESSION['role'] = 'participant';
                 
-                // IMPORTANT: Force session write to disk before redirecting
-                // This fixes the "Looping back to login" issue
                 session_write_close(); 
                 
                 header("Location: index.php"); 

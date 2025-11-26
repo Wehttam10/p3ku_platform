@@ -75,10 +75,8 @@ if (!$assignment_id) {
             margin-bottom: 30px;
         }
         
-        /* Hide radio buttons */
         input[type="radio"] { display: none; }
         
-        /* Style the labels as big buttons */
         .emoji-label { 
             font-size: 3rem; 
             cursor: pointer; 
@@ -90,7 +88,6 @@ if (!$assignment_id) {
         
         .emoji-label:hover { transform: scale(1.2); background-color: #f0f0f0; }
         
-        /* Highlight selected emoji */
         input[type="radio"]:checked + .emoji-label { 
             background-color: #FFEB3B; 
             border-color: #FBC02D; 

@@ -7,7 +7,6 @@
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
-// Define paths
 if (!defined('ROOT_PATH')) define('ROOT_PATH', dirname(__DIR__) . '/');
 if (!defined('BASE_URL')) define('BASE_URL', '/p3ku-main/'); 
 
@@ -30,19 +29,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'updat
     
     $p_id = $_POST['participant_id'];
     $new_skill = $_POST['skill_level'];
-    // Checkbox sends '1' if checked, nothing if unchecked. We default to 0.
     $is_active = isset($_POST['is_active']) ? 1 : 0; 
 
     $model = new Participant();
     
-    // Call the update function in the Model
     if ($model->updateSkillLevel($p_id, $new_skill, $is_active)) {
         $_SESSION['success_message'] = "Profile updated successfully!";
     } else {
         $_SESSION['error_message'] = "Failed to update profile.";
     }
 
-    // Refresh the page to show changes
     header("Location: view_profile.php?id=" . $p_id);
     exit();
 }
@@ -64,12 +60,10 @@ if (!$participant) {
     exit;
 }
 
-// Get and clear messages
 $success_message = $_SESSION['success_message'] ?? null;
 $error_message = $_SESSION['error_message'] ?? null;
 unset($_SESSION['success_message'], $_SESSION['error_message']);
 
-// Skill Levels
 $skill_levels = [
     'Pending' => 'Pending Review',
     'Level 1: Basic Visual (Red)' => 'Level 1: Basic Visual Tasks',

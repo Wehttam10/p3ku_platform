@@ -32,10 +32,8 @@ unset($_SESSION['login_success']);
     <title>P3KU Platform - Login</title>
     <link rel="stylesheet" href="<?php echo URL_ROOT; ?>assets/css/style.css">
     <style>
-        /* --- LIGHT GREEN THEME STYLES --- */
         body {
             font-family: 'Segoe UI', sans-serif;
-            /* Light Green Gradient Background */
             background: linear-gradient(135deg, #A5D6A7 0%, #66BB6A 100%);
             display: flex;
             justify-content: center;
@@ -46,7 +44,7 @@ unset($_SESSION['login_success']);
 
         .login-container {
             background: #fff;
-            border-radius: 15px; /* Softer corners */
+            border-radius: 15px;
             box-shadow: 0 15px 35px rgba(0,0,0,0.1);
             max-width: 900px;
             width: 100%;
@@ -55,7 +53,6 @@ unset($_SESSION['login_success']);
         }
 
         .welcome-section {
-            /* Matching Light Green Gradient Sidebar */
             background: linear-gradient(135deg, #81C784 0%, #4CAF50 100%);
             color: #fff;
             padding: 60px 40px;
@@ -74,7 +71,7 @@ unset($_SESSION['login_success']);
 
         .login-section h2 {
             margin-bottom: 30px;
-            color: #388E3C; /* Darker Green for readable title */
+            color: #388E3C;
         }
 
         .form-group {
@@ -91,7 +88,7 @@ unset($_SESSION['login_success']);
         .form-group input {
             width: 100%;
             padding: 12px;
-            border: 2px solid #E8F5E9; /* Very light green border */
+            border: 2px solid #E8F5E9;
             border-radius: 8px;
             font-size: 1em;
             box-sizing: border-box;
@@ -100,7 +97,7 @@ unset($_SESSION['login_success']);
         }
 
         .form-group input:focus {
-            border-color: #66BB6A; /* Light Green Focus */
+            border-color: #66BB6A;
             background-color: #fff;
             outline: none;
         }
@@ -108,7 +105,6 @@ unset($_SESSION['login_success']);
         .btn {
             width: 100%;
             padding: 14px;
-            /* Light Green Gradient Button */
             background: linear-gradient(135deg, #81C784 0%, #4CAF50 100%);
             color: #fff;
             border: none;
@@ -131,7 +127,7 @@ unset($_SESSION['login_success']);
         }
 
         .child-login-link a {
-            color: #4CAF50; /* Standard Material Green */
+            color: #4CAF50;
             text-decoration: none;
             font-weight: bold;
             font-size: 1.1rem;
@@ -148,7 +144,6 @@ unset($_SESSION['login_success']);
             text-decoration: none;
         }
         
-        /* Message Styles */
         .alert-error {
             background: #FFEBEE;
             color: #C62828;

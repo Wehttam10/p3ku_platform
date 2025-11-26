@@ -1,25 +1,19 @@
-/*
- * Design Tokens: Centralized CSS Variables for P3ku Platform
- * Based on WCAG AA 4.5:1 contrast requirement.
- */
-
 :root {
     /* --- 1. Colors --- */
-    --color-primary-green: #2F8F2F; /* Agriculture, Growth */
-    --color-primary-green-dark: #1e6d1e; /* For hover/active states */
-    --color-secondary-yellow: #F4C542; /* Friendly, CTA */
-    --color-neutral-slate: #455A64; /* Text, Headers, Secondary Buttons */
-    --color-background: #FAFAFA; /* Light background */
+    --color-primary-green: #2F8F2F;
+    --color-primary-green-dark: #1e6d1e;
+    --color-secondary-yellow: #F4C542;
+    --color-neutral-slate: #455A64; 
+    --color-background: #FAFAFA;
     --color-white: #FFFFFF;
     
-    /* System Feedback Colors */
     --color-success: #28a745;
     --color-error: #dc3545;
     --color-warning: #F4C542;
     
     /* --- 2. Typography --- */
-    --font-heading: 'Poppins', 'Nunito', sans-serif; /* Accessible, rounded headings */
-    --font-body: 'Inter', 'Open Sans', sans-serif; /* Readable body text */
+    --font-heading: 'Poppins', 'Nunito', sans-serif; 
+    --font-body: 'Inter', 'Open Sans', sans-serif;
     --font-size-base: 1rem;
     --font-size-h1: 2.5rem;
     --font-size-h2: 2rem;
@@ -34,7 +28,7 @@
     --spacing-xxl: 48px;
     
     /* --- 4. Radius & Shadows --- */
-    --radius-soft: 12px; /* Child-friendly softness */
+    --radius-soft: 12px; 
     --radius-btn: 16px;
     --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
 }

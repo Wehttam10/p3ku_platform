@@ -9,11 +9,9 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-// Define standard paths
 if (!defined('ROOT_PATH')) define('ROOT_PATH', dirname(__DIR__) . '/');
 if (!defined('BASE_URL')) define('BASE_URL', '/p3ku-main/'); 
 
-// Start Session
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -25,7 +23,6 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
 }
 
 // --- 3. DATA RETRIEVAL ---
-// We use the DashboardModel we created in previous steps
 if (!file_exists(ROOT_PATH . 'models/dashboard.php')) {
     die("Error: Missing file models/dashboard.php");
 }
@@ -34,8 +31,6 @@ require_once(ROOT_PATH . 'models/dashboard.php');
 $dashboard_model = new DashboardModel();
 $stats = $dashboard_model->getStats();
 
-// Map the stats to variables for the HTML
-// (Defaults to 0 if data is missing)
 $total_participants = $stats['total_participants'] ?? 0;
 $total_tasks = $stats['total_tasks'] ?? 0;
 $assignments_active = $stats['assignments_in_progress'] ?? 0;
@@ -50,12 +45,10 @@ $admin_name = $_SESSION['user_name'] ?? 'Admin';
     <title>Admin Dashboard | P3KU</title>
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/style.css"> 
     <style>
-        /* CSS for summary cards and quick actions */
         main { padding: 20px; }
         h2 { color: #455A64; margin-bottom: 20px; }
         a { text-decoration: none; color: #333; }
 
-        /* Quick Action Grid */
         .quick-actions {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -63,7 +56,7 @@ $admin_name = $_SESSION['user_name'] ?? 'Admin';
             margin-bottom: 40px;
         }
         .action-btn {
-            background-color: #F4C542; /* Secondary Yellow */
+            background-color: #F4C542;
             color: #333;
             padding: 20px;
             border-radius: 12px;
@@ -77,7 +70,6 @@ $admin_name = $_SESSION['user_name'] ?? 'Admin';
         }
         .action-btn:hover { background-color: #e0b435; transform: translateY(-2px); }
 
-        /* Summary Card Grid */
         .summary-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -94,9 +86,8 @@ $admin_name = $_SESSION['user_name'] ?? 'Admin';
         .summary-card .value { font-size: 2.5rem; font-weight: bold; }
         .summary-card .detail { color: #666; font-size: 0.9rem; margin-top: 10px; }
 
-        /* Card Colors */
-        .card-active { border-left-color: #2F8F2F; } /* Success green */
-        .card-neutral { border-left-color: #455A64; } /* Neutral slate */
+        .card-active { border-left-color: #2F8F2F; }
+        .card-neutral { border-left-color: #455A64; }
     </style>
 </head>
 <body>

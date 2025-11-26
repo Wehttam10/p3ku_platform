@@ -8,11 +8,9 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-// Define paths relative to this file
 if (!defined('ROOT_PATH')) define('ROOT_PATH', dirname(__DIR__) . '/');
 if (!defined('BASE_URL')) define('BASE_URL', '/p3ku-main/'); 
 
-// Start Session
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -24,7 +22,6 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
 }
 
 // --- 3. INCLUDES ---
-// Check if file exists to avoid fatal error
 if (!file_exists(ROOT_PATH . 'models/participant.php')) {
     die("Error: Missing file models/participant.php");
 }
@@ -39,7 +36,6 @@ try {
     die("Database Error: " . $e->getMessage());
 }
 
-// --- HTML START ---
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -50,7 +46,6 @@ try {
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/style.css"> 
     <style>
         a { text-decoration: none; color: #333; }
-        /* Minimal CSS for Clarity */
         .table-container { overflow-x: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .data-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         .data-table th, .data-table td { 

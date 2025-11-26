@@ -1,19 +1,12 @@
 <?php
 /**
  * Centralized Error & Exception Handler for P3KU Platform
- * Logging + Pretty Error Page + JSON API Support
  */
 
-// ---------------------------------------------------------
-// ROOT PATH (Fallback to current folder if not defined)
-// ---------------------------------------------------------
 if (!defined('ROOT_PATH')) {
-    define('ROOT_PATH', __DIR__ . '/../'); // Adjust if needed
+    define('ROOT_PATH', __DIR__ . '/../');
 }
 
-// ---------------------------------------------------------
-// LOG FILE AND DIRECTORY CREATION
-// ---------------------------------------------------------
 define('LOG_DIR', ROOT_PATH . 'logs/');
 define('LOG_FILE', LOG_DIR . 'application.log');
 
@@ -22,9 +15,6 @@ if (!file_exists(LOG_DIR)) {
     mkdir(LOG_DIR, 0777, true);
 }
 
-// ---------------------------------------------------------
-// FUNCTION: Log error to file
-// ---------------------------------------------------------
 function log_error_details($type, $message, $file, $line, $trace = '')
 {
     $logEntry = "[" . date('Y-m-d H:i:s') . "] "
@@ -34,13 +24,9 @@ function log_error_details($type, $message, $file, $line, $trace = '')
 
     $logFile = __DIR__ . '/../logs/application.log';
 
-    // Write the correct variable ($logEntry), not $errorMessage
     file_put_contents($logFile, $logEntry, FILE_APPEND);
 }
 
-// ---------------------------------------------------------
-// CUSTOM EXCEPTION HANDLER
-// ---------------------------------------------------------
 function p3ku_exception_handler($exception)
 {
     $message = $exception->getMessage();
@@ -48,10 +34,8 @@ function p3ku_exception_handler($exception)
     $line    = $exception->getLine();
     $trace   = $exception->getTraceAsString();
 
-    // Log to file
     log_error_details("UNCAUGHT EXCEPTION", $message, $file, $line, $trace);
 
-    // If API request → return JSON
     if (is_api_request()) {
         http_response_code(500);
         echo json_encode([
@@ -62,17 +46,12 @@ function p3ku_exception_handler($exception)
         exit();
     }
 
-    // Pretty HTML error page
     error_page("Exception Occurred", $message, $file, $line);
     exit();
 }
 
-// ---------------------------------------------------------
-// CUSTOM ERROR HANDLER
-// ---------------------------------------------------------
 function p3ku_error_handler($severity, $message, $file, $line)
 {
-    // Convert error levels
     $severityMap = [
         E_ERROR             => "ERROR",
         E_WARNING           => "WARNING",
@@ -95,19 +74,14 @@ function p3ku_error_handler($severity, $message, $file, $line)
 
     log_error_details($type, $message, $file, $line);
 
-    /* Fatal errors → stop execution */
     if (in_array($severity, [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR])) {
         error_page($type, $message, $file, $line);
         exit();
     }
 
-    /* Allow PHP to handle non-fatal warnings/notices if needed */
     return true;
 }
 
-// ---------------------------------------------------------
-// Helper: Check if request is API
-// ---------------------------------------------------------
 function is_api_request()
 {
     if (!empty($_SERVER["HTTP_ACCEPT"]) && strpos($_SERVER["HTTP_ACCEPT"], "application/json") !== false) {
@@ -119,9 +93,6 @@ function is_api_request()
     return false;
 }
 
-// ---------------------------------------------------------
-// Helper: Pretty HTML Error Page
-// ---------------------------------------------------------
 function error_page($title, $message, $file, $line)
 {
     echo "
@@ -148,16 +119,10 @@ function error_page($title, $message, $file, $line)
     ";
 }
 
-// ---------------------------------------------------------
-// START SESSION (for any handler needing $_SESSION)
-// ---------------------------------------------------------
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
 
-// ---------------------------------------------------------
-// REGISTER HANDLERS
-// ---------------------------------------------------------
 set_exception_handler('p3ku_exception_handler');
 set_error_handler('p3ku_error_handler');
 

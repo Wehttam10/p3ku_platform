@@ -9,11 +9,8 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 // --- 2. DEFINE PATHS ---
-// ROOT_PATH: For including PHP files (Internal)
 define('ROOT_PATH', dirname(__DIR__) . '/');
 
-// BASE_URL: For links and redirects (External/Browser)
-// This must match your folder name in htdocs
 define('BASE_URL', '/p3ku-main/'); 
 
 // --- 3. START SESSION ---
@@ -29,7 +26,6 @@ require_once(ROOT_PATH . 'controllers/taskController.php');
 
 // --- 6. HANDLE FORM SUBMISSION ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Pass control to the TaskController
     TaskController::handleCreateTask($_POST, $_FILES);
 }
 
@@ -54,7 +50,6 @@ $skill_levels = [
     <title>Admin | Create New Task</title>
     <link rel="stylesheet" href="../assets/css/style.css"> 
     <style>
-        /* Minimal styling for clarity and large input fields */
         .form-group { margin-bottom: 24px; }
         label { font-weight: bold; display: block; margin-bottom: 8px; }
         a { text-decoration: none; color: #333; }
@@ -67,16 +62,16 @@ $skill_levels = [
             box-sizing: border-box;
         }
         .step-container { 
-            border: 1px solid #F4C542; /* Secondary yellow border for distinction */
+            border: 1px solid #F4C542;
             padding: 15px; 
             margin-bottom: 15px; 
             border-radius: 8px; 
-            background-color: #fffff0; /* Light background */
+            background-color: #fffff0;
         }
         .step-container h4 { margin-top: 0; display: inline-block; }
         .remove-step { float: right; background-color: #cc3333; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
         .btn-add-step { 
-            background-color: #455A64; /* Neutral slate */
+            background-color: #455A64;
             color: white; 
             padding: 10px 15px; 
             border: none; 
@@ -85,7 +80,7 @@ $skill_levels = [
             margin-bottom: 20px;
         }
         .btn-primary { 
-            background-color: #2F8F2F; /* Primary Green */
+            background-color: #2F8F2F;
             color: white; 
             padding: 15px 25px; 
             border: none; 
@@ -170,9 +165,8 @@ $skill_levels = [
             let stepCounter = 0; // Initialize to 0
 
             /**
-             * Creates the HTML markup for a single task step.
-             * @param {number} count The current step number for array indexing.
-             * @returns {string} The HTML string.
+             * @param {number} count 
+             * @returns {string}
              */
             function createStepMarkup(count) {
                 return `
@@ -212,51 +206,36 @@ $skill_levels = [
                 `;
             }
 
-            /**
-             * Re-numbers all step headers and input names after a step is removed.
-             */
             window.updateStepNumbers = function() {
                 const steps = stepsContainer.querySelectorAll('.step-container');
-                let currentStepIndex = 1; // Start counting from 1 for display and array index
+                let currentStepIndex = 1;
                 
                 steps.forEach((stepDiv) => {
                     stepDiv.setAttribute('data-step', currentStepIndex);
                     
-                    // Update header text
                     stepDiv.querySelector('h4').textContent = `Step ${currentStepIndex}`;
 
-                    // Update input names for PHP processing (e.g., steps[1][...], steps[2][...])
                     stepDiv.querySelectorAll('input, textarea, select').forEach(input => {
-                        // Regex to replace the old index with the new one for the 'steps' array
                         if (input.name.startsWith('steps[')) {
                              const name = input.name.replace(/steps\[\d+\]/, `steps[${currentStepIndex}]`);
                              input.name = name;
                         }
-                        // Update IDs as well (though not strictly necessary for form submission, good practice)
-                        // This part is left simple to avoid over-complicating. The key is the 'name' attribute.
                     });
 
                     currentStepIndex++;
                 });
                 
-                // Set the counter for the *next* step to be added
                 stepCounter = currentStepIndex; 
             };
 
-            /**
-             * Adds a new step to the container.
-             */
             function addStep() {
-                // The current stepCounter is the index for the new step (starts at 1, 2, 3...)
                 let nextStepIndex = stepsContainer.querySelectorAll('.step-container').length + 1;
                 stepsContainer.insertAdjacentHTML('beforeend', createStepMarkup(nextStepIndex));
-                updateStepNumbers(); // Ensure correct re-indexing
+                updateStepNumbers();
             }
-            
-            // Event listener for the Add Step button
+
             addStepButton.addEventListener('click', addStep);
 
-            // Add an initial step when the page loads
             addStep();
         });
     </script>

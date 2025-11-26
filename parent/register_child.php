@@ -7,7 +7,6 @@
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
-// Define paths relative to this file
 define('ROOT_PATH', dirname(__DIR__) . '/');
 define('BASE_URL', '/p3ku-main/'); 
 
@@ -20,7 +19,6 @@ require_once(ROOT_PATH . 'config/auth.php');
 require_once(ROOT_PATH . 'models/participant.php');
 
 // --- 3. SECURITY CHECK ---
-// Ensure the user is a logged-in Parent
 if (!is_parent()) {
     header("Location: " . BASE_URL . "index.php");
     exit();
@@ -42,15 +40,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         $model = new Participant();
         
-        // Call the function
         $result = $model->createParticipant($_SESSION['user_id'], $name, $pin, $sensory);
         
-        // Logic: If TRUE, it worked. If STRING, it's an error message.
         if ($result === true) {
             $success_message = "Child registered successfully! Pending Admin activation.";
-            $name = $pin = $sensory = ''; // Clear form
+            $name = $pin = $sensory = '';
         } else {
-            // Show the specific error (e.g., "PIN already used")
             $error_message = $result;
         }
     }

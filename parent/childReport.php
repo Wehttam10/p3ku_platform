@@ -1,7 +1,6 @@
 <?php
 /**
  * Parent Child Progress Report Page
- * Filename: childReport.php
  */
 
 // --- 1. CONFIGURATION ---
@@ -38,17 +37,14 @@ if (!$child_id) {
 $report_model = new Report();
 $participant_model = new Participant();
 
-// Fetch Child's Name
 $child_data = $participant_model->getParticipantById($child_id);
 
-// Security: Verify this child actually belongs to this parent
 if (!$child_data || $child_data['parent_user_id'] != $parent_user_id) {
     $_SESSION['error_message'] = "Report not accessible or child not found.";
     header('Location: dashboard.php');
     exit;
 }
 
-// Fetch Report Data
 $report_data = $report_model->getParentReportData($child_id);
 $summary = $report_data['summary'] ?? [];
 $history = $report_data['history'] ?? [];
@@ -57,13 +53,11 @@ $child_name = htmlspecialchars($child_data['name']);
 $current_skill = htmlspecialchars($child_data['skill_level']);
 $tasks_completed = $summary['tasks_completed'] ?? 0;
 
-// Emoji Mapping
 $emoji_map = [
     'happy' => '😊', 'calm' => '😌', 'neutral' => '😐',
     'frustrated' => '😤', 'sad' => '😔', 'hard' => '😓'
 ];
 
-// Calculate "Most Frequent Feeling"
 $dominant_mood = '—';
 $dominant_icon = '❓';
 

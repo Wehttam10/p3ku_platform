@@ -1,7 +1,6 @@
 <?php
 /**
  * Parent Child Profile View
- * Filename: childProfile.php
  */
 
 // --- 1. CONFIGURATION ---
@@ -37,7 +36,6 @@ if (!$child_id) {
 $participant_model = new Participant();
 $child_data = $participant_model->getParticipantById($child_id);
 
-// Verify the child belongs to the logged-in parent
 if (!$child_data || $child_data['parent_user_id'] != $parent_user_id) {
     $_SESSION['error_message'] = "Access denied or child not found.";
     header('Location: dashboard.php');
@@ -45,7 +43,6 @@ if (!$child_data || $child_data['parent_user_id'] != $parent_user_id) {
 }
 
 // --- 5. FIX: Handle Null Values Safeley ---
-// We use '??' to provide a default value if the database field is empty/null
 $name = htmlspecialchars($child_data['name'] ?? '');
 $skill_level = htmlspecialchars($child_data['skill_level'] ?? 'Pending');
 $sensory_details = htmlspecialchars($child_data['sensory_details'] ?? ''); 

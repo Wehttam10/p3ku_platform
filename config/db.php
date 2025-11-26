@@ -8,7 +8,7 @@
 define('DB_HOST', 'localhost');
 define('DB_NAME', 'p3ku_platform');
 define('DB_USER', 'root');
-define('DB_PASS', ''); // <--- CHECK THIS: Blank for XAMPP, usually 'root' for MAMP
+define('DB_PASS', ''); 
 
 // --- 2. Connection Function ---
 function get_db_connection() {

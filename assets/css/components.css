@@ -1,8 +1,4 @@
-/*
- * Component Library: Reusable styles based on Design Tokens
- */
 
-/* --- Base & Reset (For clarity) --- */
 body {
     font-family: var(--font-body);
     color: var(--color-neutral-slate);
@@ -16,9 +12,7 @@ h1, h2, h3, h4 {
     margin-bottom: var(--spacing-md);
 }
 
-/* --- 1. Buttons (Primary & Secondary) --- */
 .btn {
-    /* Enforce minimum touch target (48px) */
     min-height: 48px; 
     min-width: 48px;
     padding: var(--spacing-md) var(--spacing-lg);
@@ -32,7 +26,6 @@ h1, h2, h3, h4 {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    /* Always-visible focus indicator (WCAG AA) */
     outline: 2px solid transparent; 
     outline-offset: 2px;
 }
@@ -68,7 +61,7 @@ h1, h2, h3, h4 {
     border-radius: var(--radius-soft);
     box-sizing: border-box;
     margin-bottom: var(--spacing-lg);
-    min-height: 48px; /* Enforce min height */
+    min-height: 48px;
 }
 
 /* --- 3. Cards & Containers --- */
@@ -86,16 +79,15 @@ h1, h2, h3, h4 {
     border-radius: var(--radius-soft);
     font-weight: bold;
     border-left: 5px solid;
-    /* Ensure high contrast for text inside alerts */
 }
 
 .alert-success {
-    background-color: #d4edda; /* Light green background */
-    color: #155724; /* Darker green text */
+    background-color: #d4edda;
+    color: #155724;
     border-left-color: var(--color-success);
 }
 .alert-error {
-    background-color: #f8d7da; /* Light red background */
-    color: #721c24; /* Darker red text */
+    background-color: #f8d7da;
+    color: #721c24;
     border-left-color: var(--color-error);
 }
